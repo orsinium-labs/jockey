@@ -34,9 +34,11 @@ class Registry(Generic[Payload, Key, Result]):
         max_jobs: int = 16,
         job_timeout: float = 32,
         execute_in: ExecuteIn = ExecuteIn.MAIN,
-        pulse: bool = True,
+        pulse_every: float = 0,
         priority: Priority = Priority.NORMAL,
     ) -> Wrapper[Handler[Payload, Result]]:
+        """A decorator to add a new handler into the registry.
+        """
         def wrapper(handler: H) -> H:
             if self._sealed:
                 raise RuntimeError('Registry is already sealed, cannot add more actors')
@@ -45,7 +47,7 @@ class Registry(Generic[Payload, Key, Result]):
                 max_jobs=max_jobs,
                 job_timeout=job_timeout,
                 execute_in=execute_in,
-                pulse=pulse,
+                pulse_every=pulse_every,
                 priority=priority,
             )
             return handler

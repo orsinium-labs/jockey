@@ -19,8 +19,8 @@ class ActorConfig(Generic[Payload, Key, Result]):
     handler: Callable[[Payload], Awaitable[Result] | Result]
     max_jobs: int
     job_timeout: float
+    pulse_every: float
     execute_in: ExecuteIn
-    pulse: bool
     priority: Priority
 
 
@@ -33,7 +33,7 @@ class Actor(Generic[Payload, Key, Result]):
 
     async def handle(self, msg: Adapter[Payload, Key, Result]) -> None:
         pulse_task: asyncio.Task[None] | None = None
-        if self.config.pulse:
+        if self.config.pulse_every:
             pulse_task = asyncio.create_task(self._pulse(msg))
         try:
             async with self.actor_sem:
@@ -77,5 +77,5 @@ class Actor(Generic[Payload, Key, Result]):
         """Keep notifying nats server that the message handling is in progress.
         """
         while True:
-            await asyncio.sleep(self.config.job_timeout / 2)
+            await asyncio.sleep(self.config.pulse_every)
             await msg.on_pulse()
