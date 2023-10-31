@@ -1,0 +1,31 @@
+
+[tool.ruff]
+line-length = 90
+select = [
+    "ASYNC", # flake8-async
+    "B",     # flake8-bugbear
+    "COM",   # flake8-commas
+    "E",     # pycodestyle
+    "F",     # pyflakes
+    "FURB",  # refurb
+    "I",     # isort
+    "ISC",   # flake8-implicit-str-concat
+    "N",     # pep8-naming
+    "PIE",   # flake8-pie
+    "PL",    # pylint
+    "PTH",   # flake8-use-pathlib
+    "Q",     # flake8-quotes
+    "RUF",   # Ruff-specific rules
+    "SIM",   # flake8-simplify
+    "W",     # pycodestyle
+]
+ignore = [
+    "B008",    # allow to perorm function call in arguments
+    "B904",    # allow to `raise` from `except`
+    "PIE790",  # allow unnecessary pass statements
+    "PLR0913", # allow more than 5 parameters in a function
+    "PLR2004", # allow hardcoded constants
+    "PLW2901", # allow overriding loop variable
+    "SIM117",  # allow nested with
+]
+target-version = "py39"
