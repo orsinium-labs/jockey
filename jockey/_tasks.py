@@ -27,7 +27,7 @@ class Tasks:
     def cancel(self) -> None:
         """Cancel all supervised tasks.
         """
-        if self._done:
+        if self._done:  # pragma: no cover
             return
         for task in self._tasks:
             task.cancel()

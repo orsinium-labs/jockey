@@ -58,7 +58,7 @@ addopts = [
     "--cov=jockey",
     "--cov-report=html",
     "--cov-report=term-missing:skip-covered",
-    "--cov-fail-under=97",
+    "--cov-fail-under=100",
 ]
 asyncio_mode = "auto"
 
