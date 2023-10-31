@@ -4,6 +4,8 @@ While uvcorn takes care of concurrency, jockey adds a very simple routing,
 simplified endpoint implementation, and type safety. It also gives some unique
 features that you can't find in other web frameworks, like setting priority
 for endpoints.
+
+https://www.uvicorn.org/
 """
 from __future__ import annotations
 
@@ -60,7 +62,7 @@ class Request(jockey.Adapter[Body, Path, Response]):
 
     async def _send_response(self, status: int, body: Response) -> None:
         await self.send({
-            'type': 'http.response.start',  # type: ignore
+            'type': 'http.response.start',
             'status': status,
             'headers': [
                 (b'content-type', b'application/json'),

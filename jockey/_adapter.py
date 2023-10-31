@@ -16,10 +16,14 @@ class Adapter(ABC, Generic[Payload, Key, Result]):
 
     @abstractmethod
     async def get_payload(self) -> Payload:
+        """
+        """
         raise NotImplementedError
 
     @abstractmethod
     async def on_success(self, result: Result) -> None:
+        """
+        """
         raise NotImplementedError
 
     @abstractmethod

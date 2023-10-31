@@ -42,7 +42,7 @@ lint = ["ruff", "mypy"]
 Source = "https://github.com/orsinium-labs/jockey"
 
 [tool.mypy]
-files = ["jockey", "tests"]
+files = ["jockey", "tests", "examples"]
 python_version = 3.8
 ignore_missing_imports = true
 # follow_imports = "silent"
