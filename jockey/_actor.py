@@ -14,13 +14,12 @@ from ._priority import Priority
 
 @dataclass(frozen=True)
 class ActorConfig(Generic[Payload, Key, Result]):
-    key: Key
     handler: Callable[[Payload], Awaitable[Result] | Result]
-    max_jobs: int = 16
-    job_timeout: float = 32
-    execute_in: ExecuteIn = ExecuteIn.MAIN
-    pulse: bool = True
-    priority: Priority = Priority.NORMAL
+    max_jobs: int
+    job_timeout: float
+    execute_in: ExecuteIn
+    pulse: bool
+    priority: Priority
 
 
 @dataclass(frozen=True)
