@@ -1,3 +1,5 @@
 .*_cache/
 .task/
 __pycache__/
+/.task/
+/.venvs/

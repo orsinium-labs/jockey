@@ -1,3 +1,78 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "jockey"
+authors = [{ name = "Gram", email = "git@orsinium.dev" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.8"
+dynamic = ["version", "description"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Typing :: Typed",
+]
+keywords = [
+    "nats",
+    "dramatiq",
+    "celery",
+    "microservices",
+    "rabbitmq",
+    "arq",
+    "rq",
+    "huey",
+    "event-driven",
+    "distributed",
+    "web",
+    "framewrok",
+    "web framework",
+    "asyncio",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov", "pytest-asyncio"]
+lint = ["ruff", "mypy"]
+
+[project.urls]
+Source = "https://github.com/orsinium-labs/jockey"
+
+[tool.mypy]
+files = ["jockey", "tests"]
+python_version = 3.8
+ignore_missing_imports = true
+# follow_imports = "silent"
+show_error_codes = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=jockey",
+    "--cov-report=html",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-fail-under=97",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING",
+    "    pass",
+    "except ImportError:",
+    "raise NotImplementedError",
+]
+
+[tool.coverage.run]
+branch = true
 
 [tool.ruff]
 line-length = 90
@@ -28,4 +103,7 @@ ignore = [
     "PLW2901", # allow overriding loop variable
     "SIM117",  # allow nested with
 ]
-target-version = "py39"
+target-version = "py38"
+
+[tool.ruff.flake8-quotes]
+inline-quotes = "single"

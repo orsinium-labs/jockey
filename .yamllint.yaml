@@ -1,0 +1,8 @@
+# https://yamllint.readthedocs.io/en/latest/configuration.html
+extends: default
+rules:
+  line-length:
+    max: 90
+  document-start: disable
+ignore:
+  - .venvs/
