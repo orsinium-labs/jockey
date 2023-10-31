@@ -14,13 +14,13 @@ from ._registry import Registry
 
 @dataclass(frozen=True)
 class Executor(Generic[Payload, Key, Result]):
-    registry: Registry[Key]
+    registry: Registry[Payload, Key, Result]
     max_jobs: int = 16
     max_processes: int | None = None
     max_threads: int | None = None
 
     @contextmanager
-    def get_executor(
+    def run(
         self: Executor[Payload, Key, Result],
     ) -> Iterator[RunningExecutor[Payload, Key, Result]]:
         self.registry._sealed = True
@@ -61,7 +61,7 @@ class RunningExecutor(Generic[Payload, Key, Result]):
     _actors: dict[Key, Actor]
 
     async def execute(self, msg: Adapter[Payload, Key, Result]) -> bool:
-        for key in await msg.get_keys():
+        for key in msg.get_keys():
             actor = self._actors.get(key)
             if actor is not None:
                 await actor.handle(msg)

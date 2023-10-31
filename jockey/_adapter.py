@@ -11,7 +11,7 @@ Result = TypeVar('Result')
 
 class Adapter(ABC, Generic[Payload, Key, Result]):
     @abstractmethod
-    async def get_keys(self) -> Iterator[Key]:
+    def get_keys(self) -> Iterator[Key]:
         raise NotImplementedError
 
     @abstractmethod

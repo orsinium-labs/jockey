@@ -18,7 +18,7 @@ class Wrapper(Protocol, Generic[H]):
         pass
 
 
-class Registry(Generic[Key]):
+class Registry(Generic[Payload, Key, Result]):
     def __init__(self) -> None:
         self._actors: dict[Key, ActorConfig] = {}
         self._sealed: bool = False
