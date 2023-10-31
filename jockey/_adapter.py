@@ -32,3 +32,6 @@ class Adapter(ABC, Generic[Payload, Key, Result]):
 
     async def on_pulse(self) -> None:
         pass
+
+    async def on_no_handler(self) -> None:
+        pass

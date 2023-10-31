@@ -49,16 +49,25 @@ def _div(payload: Payload) -> Result:
     return left / right
 
 
+@registry.add(key='-')
+async def _sub(payload: Payload) -> Result:
+    left, right = payload
+    await asyncio.sleep(1)
+    return left / right
+
+
 async def main() -> None:
-    with jockey.Executor(registry).run() as executor:
+    async with jockey.Executor(registry).run() as executor:
         messages = [
+            Message(3, '-', 2),
             Message(4, '+', 5),
             Message(3, '/', 2),
             Message(3, '/', 0),
             Message(3, '+', 0),
         ]
         for msg in messages:
-            await executor.execute(msg)
+            executor.schedule(msg)
+            # await executor.execute(msg)
 
 if __name__ == '__main__':
     asyncio.run(main())

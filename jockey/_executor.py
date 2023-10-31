@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import asyncio
 from concurrent import futures
-from contextlib import ExitStack, contextmanager
+from contextlib import ExitStack, asynccontextmanager
 from dataclasses import dataclass
-from typing import Generic, Iterator
+from typing import AsyncIterator, Generic
 
 from ._adapter import Adapter, Payload, Key, Result
 from ._execute_in import ExecuteIn
 from ._actor import Actor
 from ._registry import Registry
+from ._tasks import Tasks
 
 
 @dataclass(frozen=True)
@@ -19,10 +20,10 @@ class Executor(Generic[Payload, Key, Result]):
     max_processes: int | None = None
     max_threads: int | None = None
 
-    @contextmanager
-    def run(
+    @asynccontextmanager
+    async def run(
         self: Executor[Payload, Key, Result],
-    ) -> Iterator[RunningExecutor[Payload, Key, Result]]:
+    ) -> AsyncIterator[RunningExecutor[Payload, Key, Result]]:
         self.registry._sealed = True
         global_sem = asyncio.Semaphore(self.max_jobs)
         thread_pool: futures.ThreadPoolExecutor | None = None
@@ -53,17 +54,28 @@ class Executor(Generic[Payload, Key, Result]):
                     global_sem=global_sem,
                     executor=executor,
                 )
-            yield RunningExecutor(actors)
+            tasks = Tasks()
+            try:
+                yield RunningExecutor(actors, tasks)
+            except (Exception, asyncio.CancelledError):
+                tasks.cancel()
+                raise
+            await tasks.wait()
 
 
 @dataclass(frozen=True)
 class RunningExecutor(Generic[Payload, Key, Result]):
     _actors: dict[Key, Actor]
+    _tasks: Tasks
 
-    async def execute(self, msg: Adapter[Payload, Key, Result]) -> bool:
+    def schedule(self, msg: Adapter[Payload, Key, Result]) -> None:
+        coro = self.execute(msg)
+        self._tasks.start(coro)
+
+    async def execute(self, msg: Adapter[Payload, Key, Result]) -> None:
         for key in msg.get_keys():
             actor = self._actors.get(key)
             if actor is not None:
                 await actor.handle(msg)
-                return True
-        return False
+                return
+        await msg.on_no_handler()
