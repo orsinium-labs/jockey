@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Generic, TypeVar
+from typing import Generic, Iterator, TypeVar
 
 Payload = TypeVar('Payload')
 Key = TypeVar('Key')
@@ -11,7 +11,7 @@ Result = TypeVar('Result')
 
 class Adapter(ABC, Generic[Payload, Key, Result]):
     @abstractmethod
-    async def get_key(self) -> Key:
+    async def get_keys(self) -> Iterator[Key]:
         raise NotImplementedError
 
     @abstractmethod
