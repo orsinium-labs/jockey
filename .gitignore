@@ -1,0 +1,3 @@
+.*_cache/
+.task/
+__pycache__/
