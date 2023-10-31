@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import (
+    TYPE_CHECKING,
     Awaitable,
     Callable,
     Generic,
@@ -13,13 +14,13 @@ from ._adapter import Key, Payload, Result
 from ._execute_in import ExecuteIn
 from ._priority import Priority
 
-Handler = Callable[[Payload], Awaitable[Result] | Result]
-H = TypeVar('H', bound=Handler)
+if TYPE_CHECKING:
+    Handler = Callable[[Payload], 'Awaitable[Result] | Result']
+    H = TypeVar('H', bound=Handler)
 
-
-class Wrapper(Protocol, Generic[H]):
-    def __call__(self, h: H) -> H:
-        pass
+    class Wrapper(Protocol, Generic[H]):
+        def __call__(self, h: H) -> H:
+            pass
 
 
 class Registry(Generic[Payload, Key, Result]):
