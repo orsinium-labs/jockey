@@ -63,7 +63,7 @@ class Registry(jockey.Registry[Payload, Key, Result]):
 async def test_one_actor_execute():
     registry = Registry()
 
-    @registry.add(key='upper')
+    @registry.add('upper')
     def _upper(payload: Payload) -> Result:
         return payload.upper()
 
@@ -76,7 +76,7 @@ async def test_one_actor_execute():
 @pytest.mark.parametrize('execute_in', list(jockey.ExecuteIn))
 async def test_one_actor_execute_in(execute_in: jockey.ExecuteIn):
     registry = Registry()
-    registry.add(key='upper', execute_in=execute_in)(upper)
+    registry.add('upper', execute_in=execute_in)(upper)
 
     msg = Message('upper', 'hi')
     async with jockey.Executor(registry).run() as executor:
@@ -87,7 +87,7 @@ async def test_one_actor_execute_in(execute_in: jockey.ExecuteIn):
 async def test_one_actor_schedule():
     registry = Registry()
 
-    @registry.add(key='upper')
+    @registry.add('upper')
     def _upper(payload: Payload) -> Result:
         return payload.upper()
 
@@ -100,7 +100,7 @@ async def test_one_actor_schedule():
 async def test_no_actor_schedule():
     registry = Registry()
 
-    @registry.add(key='upper')
+    @registry.add('upper')
     def _upper(payload: Payload) -> Result:
         return payload.upper()
 
@@ -113,7 +113,7 @@ async def test_no_actor_schedule():
 async def test_asyncio_concurrency():
     registry = Registry()
 
-    @registry.add(key='upper')
+    @registry.add('upper')
     async def _upper(_: Payload) -> Result:
         await asyncio.sleep(.1)
 
@@ -126,7 +126,7 @@ async def test_asyncio_concurrency():
 async def test_threading_concurrency():
     registry = Registry()
 
-    @registry.add(key='upper', execute_in=jockey.ExecuteIn.THREAD)
+    @registry.add('upper', execute_in=jockey.ExecuteIn.THREAD)
     def _upper(_: Payload) -> Result:
         time.sleep(.1)
 
@@ -138,7 +138,7 @@ async def test_threading_concurrency():
 
 async def test_process_concurrency():
     registry = Registry()
-    registry.add(key='upper', execute_in=jockey.ExecuteIn.PROCESS)(pause)
+    registry.add('upper', execute_in=jockey.ExecuteIn.PROCESS)(pause)
 
     with duration_between(.1, .2):
         async with jockey.Executor(registry).run() as executor:
@@ -149,7 +149,7 @@ async def test_process_concurrency():
 async def test_sealed_registry():
     registry = Registry()
 
-    @registry.add(key='upper')
+    @registry.add('upper')
     def _upper(payload: Payload) -> Result:
         return payload.upper()
 
@@ -158,6 +158,6 @@ async def test_sealed_registry():
 
     exp = 'Registry is already sealed, cannot add more actors'
     with pytest.raises(RuntimeError, match=exp):
-        @registry.add(key='echo')
+        @registry.add('echo')
         def _echo(payload: Payload) -> Result:
             return payload

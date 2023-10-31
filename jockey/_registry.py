@@ -29,8 +29,9 @@ class Registry(Generic[Payload, Key, Result]):
         self._sealed: bool = False
 
     def add(
-        self, *,
+        self,
         key: Key,
+        *,
         max_jobs: int = 16,
         job_timeout: float = 32,
         execute_in: ExecuteIn = ExecuteIn.MAIN,

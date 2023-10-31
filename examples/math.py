@@ -38,19 +38,19 @@ class Registry(jockey.Registry[Payload, Key, Result]):
 registry = Registry()
 
 
-@registry.add(key='+')
+@registry.add('+')
 def _add(payload: Payload) -> Result:
     left, right = payload
     return left + right
 
 
-@registry.add(key='/')
+@registry.add('/')
 def _div(payload: Payload) -> Result:
     left, right = payload
     return left / right
 
 
-@registry.add(key='-')
+@registry.add('-')
 async def _sub(payload: Payload) -> Result:
     left, right = payload
     await asyncio.sleep(1)
