@@ -6,9 +6,9 @@ from contextlib import ExitStack, asynccontextmanager
 from dataclasses import dataclass
 from typing import AsyncIterator, Generic
 
-from ._adapter import Adapter, Payload, Key, Result
-from ._execute_in import ExecuteIn
 from ._actor import Actor
+from ._adapter import Adapter, Key, Payload, Result
+from ._execute_in import ExecuteIn
 from ._registry import Registry
 from ._tasks import Tasks
 

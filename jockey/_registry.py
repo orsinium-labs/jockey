@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from typing import (
-    Awaitable, Callable, Generic, Protocol, TypeVar,
+    Awaitable,
+    Callable,
+    Generic,
+    Protocol,
+    TypeVar,
 )
 
-from ._adapter import Payload, Key, Result
+from ._actor import ActorConfig
+from ._adapter import Key, Payload, Result
 from ._execute_in import ExecuteIn
 from ._priority import Priority
-from ._actor import ActorConfig
 
 Handler = Callable[[Payload], Awaitable[Result] | Result]
 H = TypeVar('H', bound=Handler)

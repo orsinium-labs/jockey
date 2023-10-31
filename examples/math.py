@@ -1,9 +1,10 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Iterator
+from typing import Iterator, Tuple
+
 import jockey
 
-Payload = tuple[int, int]
+Payload = Tuple[int, int]
 Key = str
 Result = float
 
@@ -24,7 +25,7 @@ class Message(jockey.Adapter[Payload, Key, Result]):
         print(f'SUCCESS: {self.left} {self.op} {self.right} = {result}')
 
     async def on_failure(self, exc: Exception) -> None:
-        print(f'FAILURE: {self.left} {self.op} {self.right} caused {repr(exc)}')
+        print(f'FAILURE: {self.left} {self.op} {self.right} caused {exc!r}')
 
     async def on_cancel(self, exc: asyncio.CancelledError) -> None:
         print(f'CANCELED: {self.left} {self.op} {self.right}')

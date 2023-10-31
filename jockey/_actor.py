@@ -4,10 +4,12 @@ import asyncio
 from concurrent.futures import Executor
 from dataclasses import dataclass
 from typing import (
-    Awaitable, Callable, Generic,
+    Awaitable,
+    Callable,
+    Generic,
 )
 
-from ._adapter import Adapter, Payload, Key, Result
+from ._adapter import Adapter, Key, Payload, Result
 from ._execute_in import ExecuteIn
 from ._priority import Priority
 
