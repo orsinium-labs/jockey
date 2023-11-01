@@ -70,8 +70,7 @@ async def main() -> None:
             Message(3, '+', 0),
         ]
         for msg in messages:
-            executor.schedule(msg)
-            # await executor.execute(msg)
+            await executor.execute(msg)
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -11,6 +11,7 @@ from ._adapter import Adapter, Key, Payload, Result
 from ._execute_in import ExecuteIn
 from ._registry import Registry
 from ._tasks import Tasks
+from ._wait_for import WaitFor
 
 
 @dataclass(frozen=True)
@@ -56,7 +57,7 @@ class Executor(Generic[Payload, Key, Result]):
                 )
             tasks = Tasks()
             try:
-                yield RunningExecutor(actors, tasks)
+                yield RunningExecutor(actors, tasks, global_sem)
             except (Exception, asyncio.CancelledError):
                 tasks.cancel()
                 raise
@@ -67,12 +68,34 @@ class Executor(Generic[Payload, Key, Result]):
 class RunningExecutor(Generic[Payload, Key, Result]):
     _actors: dict[Key, Actor]
     _tasks: Tasks
+    _global_sem: asyncio.Semaphore
 
-    def schedule(self, msg: Adapter[Payload, Key, Result]) -> None:
-        coro = self.execute(msg)
-        self._tasks.start(coro)
+    async def execute(
+        self,
+        msg: Adapter[Payload, Key, Result],
+        *,
+        wait_for: WaitFor = WaitFor.NO_PRESSURE,
+    ) -> None:
+        if wait_for is WaitFor.NOTHING:
+            coro = self._execute(msg)
+            self._tasks.start(coro)
+            return
+        if wait_for is WaitFor.FINISH:
+            await self._execute(msg)
+            return
+        if wait_for is WaitFor.NO_PRESSURE:
+            # Since the global semaphore is acquired by the actor
+            # not immediately after we release it here, it is possible,
+            # in rare scenarios, to get more in flight messages than max_jobs.
+            async with self._global_sem:
+                coro = self._execute(msg)
+                self._tasks.start(coro)
+                return
+        if wait_for is WaitFor.START:
+            raise NotImplementedError
+        raise RuntimeError('unreachable')
 
-    async def execute(self, msg: Adapter[Payload, Key, Result]) -> None:
+    async def _execute(self, msg: Adapter[Payload, Key, Result]) -> None:
         for key in msg.get_keys():
             actor = self._actors.get(key)
             if actor is not None:

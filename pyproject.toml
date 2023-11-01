@@ -69,6 +69,7 @@ exclude_lines = [
     "    pass",
     "except ImportError:",
     "raise NotImplementedError",
+    "raise RuntimeError.*unreachable.*",
 ]
 
 [tool.coverage.run]

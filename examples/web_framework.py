@@ -114,7 +114,7 @@ class Server:
                 await send({'type': 'lifespan.shutdown.complete'})
                 return
 
-        # handle requests using executor
+        # handle the request using executor
         assert scope['type'] == 'http'
         request = Request(scope, receive, send)
         await self.executor.execute(request)

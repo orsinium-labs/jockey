@@ -63,7 +63,7 @@ class Registry(jockey.Registry[Payload, Key, Result]):
     pass
 
 
-async def test_one_actor_execute():
+async def test_one_actor_execute__wait_for_finish():
     """The execute method must immediately execute the task.
     """
     registry = Registry()
@@ -74,7 +74,7 @@ async def test_one_actor_execute():
 
     msg = Message('upper', 'hi')
     async with jockey.Executor(registry).run() as executor:
-        await executor.execute(msg)
+        await executor.execute(msg, wait_for=jockey.WaitFor.FINISH)
         assert msg.calls == [('ok', 'HI')]
 
 
@@ -107,7 +107,7 @@ async def test_one_actor_execute_in(execute_in: jockey.ExecuteIn):
 
 
 async def test_one_actor_schedule():
-    """The schedule method runs the task in the backgorund.
+    """The execute method runs the task in the backgorund.
     """
     registry = Registry()
 
@@ -117,7 +117,8 @@ async def test_one_actor_schedule():
 
     msg = Message('upper', 'hi')
     async with jockey.Executor(registry).run() as executor:
-        executor.schedule(msg)
+        await executor.execute(msg)
+        assert msg.calls == []
     assert msg.calls == [('ok', 'HI')]
 
 
@@ -134,7 +135,7 @@ async def test_one_actor_schedule_wait():
     msg = Message('upper', 'hi')
     with duration_between(.1, .2):
         async with jockey.Executor(registry).run() as executor:
-            executor.schedule(msg)
+            await executor.execute(msg)
     assert msg.calls == [('ok', 'HI')]
 
 
@@ -149,12 +150,12 @@ async def test_no_actor_schedule():
 
     msg = Message('unknown', 'hi')
     async with jockey.Executor(registry).run() as executor:
-        executor.schedule(msg)
+        await executor.execute(msg)
     assert msg.calls == [('no handler', None)]
 
 
 async def test_asyncio_concurrency():
-    """Running multiple asyncio tasks with schedule method is concurrent.
+    """Running multiple asyncio tasks with execute method is concurrent.
     """
     registry = Registry()
 
@@ -165,11 +166,11 @@ async def test_asyncio_concurrency():
     with duration_between(.1, .2):
         async with jockey.Executor(registry).run() as executor:
             for n in range(10):
-                executor.schedule(Message('upper', str(n)))
+                await executor.execute(Message('upper', str(n)))
 
 
 async def test_threading_concurrency():
-    """Running multiple threading tasks with schedule method is concurrent.
+    """Running multiple threading tasks with execute method is concurrent.
     """
     registry = Registry()
 
@@ -180,11 +181,11 @@ async def test_threading_concurrency():
     with duration_between(.1, .2):
         async with jockey.Executor(registry).run() as executor:
             for n in range(10):
-                executor.schedule(Message('upper', str(n)))
+                await executor.execute(Message('upper', str(n)))
 
 
 async def test_process_concurrency():
-    """Running multiple process pool tasks with schedule method is concurrent.
+    """Running multiple process pool tasks with execute method is concurrent.
     """
     registry = Registry()
     registry.add('upper', execute_in=jockey.ExecuteIn.PROCESS)(pause)
@@ -192,7 +193,7 @@ async def test_process_concurrency():
     with duration_between(.1, .2):
         async with jockey.Executor(registry).run() as executor:
             for n in range(10):
-                executor.schedule(Message('upper', str(n)))
+                await executor.execute(Message('upper', str(n)))
 
 
 async def test_sealed_registry():
@@ -253,7 +254,7 @@ async def test_cancel_executor_cancel_scheduled():
     async def _execute() -> None:
         with duration_between(.1, .2):
             async with jockey.Executor(registry).run() as executor:
-                executor.schedule(msg)
+                await executor.execute(msg)
                 await asyncio.sleep(.1)
 
     task = asyncio.create_task(_execute())
@@ -320,3 +321,27 @@ async def test_pulse_cancel_on_cancel():
     await asyncio.sleep(.1)
     exp = [('pulse', None)] * 3 + [('cancel', asyncio.CancelledError)]
     assert msg.calls == exp
+
+
+@pytest.mark.parametrize('wait_for, expected', [
+    (jockey.WaitFor.NOTHING, .001),
+    # (jockey.WaitFor.NO_PRESSURE, .1),
+    # (jockey.WaitFor.START, .1),
+    (jockey.WaitFor.FINISH, 1.5),
+])
+async def test_one_actor_execute__wait_for(wait_for: jockey.WaitFor, expected: float):
+    """Test how different wait_for settings are affected by max_jobs.
+    """
+    registry = Registry()
+
+    @registry.add('upper', max_jobs=5)
+    async def _upper(payload: Payload) -> Result:
+        await asyncio.sleep(.1)
+        return payload.upper()
+
+    msg = Message('upper', 'hi')
+    async with jockey.Executor(registry, max_jobs=10).run() as executor:
+        with duration_between(expected - .05, expected + .05):
+            for _ in range(15):
+                await executor.execute(msg, wait_for=wait_for)
+    assert msg.calls == [('ok', 'HI')] * 15

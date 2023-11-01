@@ -71,7 +71,7 @@ async def main():
         await queue.bind(args.exchange)
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
-                executor.schedule(Message(message))
+                await executor.execute(Message(message))
 
 
 if __name__ == '__main__':

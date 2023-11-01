@@ -113,7 +113,7 @@ async def main() -> None:
             Message(3, '+', 0),
         ]
         for msg in messages:
-            executor.schedule(msg)
+            await executor.execute(msg)
 
 if __name__ == '__main__':
     asyncio.run(main())
@@ -131,7 +131,7 @@ SUCCESS: 3 - 2 = 1.5
 
 Notice that we send `Message(3, '-', 2)` first but because of `await asyncio.sleep(1)` it arrived last. It show 2 important things:
 
-1. `executor.schedule` runs all messages concurrently. So, while the first message is blocked, the rest can be processed. You can replace `executor.schedule(msg)` with `await executor.execute(msg)` to wait for a message to be processed before going to the next one.
+1. `executor.execute` runs all messages concurrently. So, while the first message is blocked, the rest can be processed. You canspecify for how long when you want the executor to return with the `wait_for` argument.
 1. When leaving the context, the executor will block and wait for all messages to finish. Similarly, if the executor is cancelled, it will make sure to cancel all running handlers (and execute `Adapter.on_cancel`).
 
 ## More examples
