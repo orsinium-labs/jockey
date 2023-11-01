@@ -4,8 +4,11 @@ from typing import Iterator, Tuple
 
 import jockey
 
+# each math operation accepts 2 integer numbers
 Payload = Tuple[int, int]
+# each math operation is identified by a symbol (like "+" or "/")
 Key = str
+# each math operation returns a float
 Result = float
 
 
@@ -44,7 +47,7 @@ def _add(payload: Payload) -> Result:
     return left + right
 
 
-@registry.add('/')
+@registry.add('/', execute_in=jockey.ExecuteIn.PROCESS)
 def _div(payload: Payload) -> Result:
     left, right = payload
     return left / right
