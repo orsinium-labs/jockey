@@ -1,6 +1,6 @@
 """Generic and type safe runner for asynchronous workers.
 """
-from ._adapter import Adapter
+from ._adapter import Adapter, Middleware
 from ._execute_in import ExecuteIn
 from ._executor import Executor, RunningExecutor
 from ._priority import Priority
@@ -11,6 +11,7 @@ __all__ = [
     'Adapter',
     'ExecuteIn',
     'Executor',
+    'Middleware',
     'Priority',
     'Registry',
     'RunningExecutor',
