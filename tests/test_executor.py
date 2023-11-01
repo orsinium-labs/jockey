@@ -325,9 +325,9 @@ async def test_pulse_cancel_on_cancel():
 
 @pytest.mark.parametrize('wait_for, expected', [
     (jockey.WaitFor.NOTHING, .001),
-    # (jockey.WaitFor.NO_PRESSURE, .1),
-    # (jockey.WaitFor.START, .1),
-    (jockey.WaitFor.FINISH, 1.5),
+    (jockey.WaitFor.NO_PRESSURE, .1),
+    (jockey.WaitFor.START, .2),
+    (jockey.WaitFor.FINISH, 1.4),
 ])
 async def test_one_actor_execute__wait_for(wait_for: jockey.WaitFor, expected: float):
     """Test how different wait_for settings are affected by max_jobs.
@@ -342,6 +342,6 @@ async def test_one_actor_execute__wait_for(wait_for: jockey.WaitFor, expected: f
     msg = Message('upper', 'hi')
     async with jockey.Executor(registry, max_jobs=10).run() as executor:
         with duration_between(expected - .05, expected + .05):
-            for _ in range(15):
+            for _ in range(14):
                 await executor.execute(msg, wait_for=wait_for)
-    assert msg.calls == [('ok', 'HI')] * 15
+    assert msg.calls == [('ok', 'HI')] * 14

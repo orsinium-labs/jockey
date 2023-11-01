@@ -84,21 +84,47 @@ class RunningExecutor(Generic[Payload, Key, Result]):
             await self._execute(msg)
             return
         if wait_for is WaitFor.NO_PRESSURE:
-            # Since the global semaphore is acquired by the actor
-            # not immediately after we release it here, it is possible,
-            # in rare scenarios, to get more in flight messages than max_jobs.
-            async with self._global_sem:
-                coro = self._execute(msg)
-                self._tasks.start(coro)
-                return
+            on_prestart: asyncio.Future[None] = asyncio.Future()
+            coro = self._execute(msg, on_prestart=on_prestart)
+            self._tasks.start(coro)
+            await on_prestart
+            return
         if wait_for is WaitFor.START:
-            raise NotImplementedError
+            on_start: asyncio.Future[None] = asyncio.Future()
+            coro = self._execute(msg, on_start=on_start)
+            self._tasks.start(coro)
+            await on_start
+            return
         raise RuntimeError('unreachable')
 
-    async def _execute(self, msg: Adapter[Payload, Key, Result]) -> None:
-        for key in msg.get_keys():
-            actor = self._actors.get(key)
-            if actor is not None:
-                await actor.handle(msg)
-                return
-        await msg.on_no_handler()
+    async def _execute(
+        self,
+        msg: Adapter[Payload, Key, Result],
+        on_prestart: asyncio.Future[None] | None = None,
+        on_start: asyncio.Future[None] | None = None,
+    ) -> None:
+        try:
+            for key in msg.get_keys():
+                actor = self._actors.get(key)
+                if actor is not None:
+                    await actor.handle(
+                        msg,
+                        _on_prestart=on_prestart,
+                        _on_start=on_start,
+                    )
+                    return
+            await msg.on_no_handler()
+        finally:
+            # in case futures aren't completed by the handler
+            # (because there is no handler or because it failed early),
+            # finish these futures to unblock Executor.execute.
+            if on_prestart is not None:
+                try:
+                    on_prestart.set_result(None)
+                except asyncio.InvalidStateError:
+                    pass
+            if on_start is not None:
+                try:
+                    on_start.set_result(None)
+                except asyncio.InvalidStateError:
+                    pass

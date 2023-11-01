@@ -37,15 +37,26 @@ class Actor(Generic[Payload, Key, Result]):
     global_sem: asyncio.Semaphore
     executor: Executor | None
 
-    async def handle(self, msg: Adapter[Payload, Key, Result]) -> None:
-        """Process using handler the payload provided by Adapter and trigger callbacks.
+    async def handle(
+        self,
+        msg: Adapter[Payload, Key, Result],
+        _on_prestart: asyncio.Future[None] | None = None,
+        _on_start: asyncio.Future[None] | None = None,
+    ) -> None:
+        """Process (using handler) payload provided by Adapter and trigger callbacks.
         """
         pulse_task: asyncio.Task[None] | None = None
         if self.config.pulse_every:
             pulse_task = asyncio.create_task(self._pulse(msg))
         try:
+            if _on_prestart is not None:
+                async with self.global_sem:
+                    _on_prestart.set_result(None)
             async with self.actor_sem:
                 async with self.config.priority.acquire(self.global_sem):
+                    if _on_start is not None:
+                        async with self.global_sem:
+                            _on_start.set_result(None)
                     payload = await msg.get_payload()
                     result = await self._handle(payload)
         except Exception as exc:
