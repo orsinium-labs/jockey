@@ -39,6 +39,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ github.token }}
       - run: task pytest
 
   markdownlint-cli:
