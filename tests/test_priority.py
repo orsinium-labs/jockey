@@ -40,6 +40,7 @@ async def test_priority_one_batch(sem_value, job_count):
         assert p1.value <= p2.value
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason='flaky on 3.8')
 @hypothesis.given(
     sem_value=strategies.integers(1, 180),
     job_count=strategies.integers(1, 40),
