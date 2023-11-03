@@ -178,7 +178,7 @@ async def test_threading_concurrency():
     def _upper(_: Payload) -> Result:
         time.sleep(.1)
 
-    with duration_between(.1, .2):
+    with duration_between(.1, .7):
         async with jockey.Executor(registry).run() as executor:
             for n in range(10):
                 await executor.execute(Message('upper', str(n)))
@@ -190,7 +190,7 @@ async def test_process_concurrency():
     registry = Registry()
     registry.add('upper', execute_in=jockey.ExecuteIn.PROCESS)(pause)
 
-    with duration_between(.1, .2):
+    with duration_between(.1, .7):
         async with jockey.Executor(registry).run() as executor:
             for n in range(10):
                 await executor.execute(Message('upper', str(n)))

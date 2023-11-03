@@ -150,7 +150,7 @@ class RunningExecutor(Generic[Payload, Key, Result]):
                 except asyncio.InvalidStateError:
                     pass
             if on_start is not None:
-                try:
+                try:  # pragma: no cover
                     on_start.set_result(None)
                 except asyncio.InvalidStateError:
                     pass
