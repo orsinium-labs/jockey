@@ -323,25 +323,77 @@ async def test_pulse_cancel_on_cancel():
     assert msg.calls == exp
 
 
-@pytest.mark.parametrize('wait_for, expected', [
-    (jockey.WaitFor.NOTHING, .001),
-    (jockey.WaitFor.NO_PRESSURE, .1),
-    (jockey.WaitFor.START, .2),
-    (jockey.WaitFor.FINISH, 1.4),
-])
-async def test_one_actor_execute__wait_for(wait_for: jockey.WaitFor, expected: float):
+async def test_wait_for_nothing():
     """Test how different wait_for settings are affected by max_jobs.
     """
     registry = Registry()
 
-    @registry.add('upper', max_jobs=5)
+    @registry.add('upper', max_jobs=5, priority=jockey.Priority.HIGH)
     async def _upper(payload: Payload) -> Result:
         await asyncio.sleep(.1)
         return payload.upper()
 
     msg = Message('upper', 'hi')
-    async with jockey.Executor(registry, max_jobs=10).run() as executor:
-        with duration_between(expected - .05, expected + .05):
-            for _ in range(14):
-                await executor.execute(msg, wait_for=wait_for)
+    with duration_between(.3, .31):
+        async with jockey.Executor(registry, max_jobs=10).run() as executor:
+            with duration_between(.0, .05):
+                for _ in range(14):
+                    await executor.execute(msg, wait_for=jockey.WaitFor.NOTHING)
     assert msg.calls == [('ok', 'HI')] * 14
+
+
+async def test_wait_for_no_pressure():
+    """Test how different wait_for settings are affected by max_jobs.
+    """
+    registry = Registry()
+
+    @registry.add('upper', max_jobs=20, priority=jockey.Priority.HIGH)
+    async def _upper(payload: Payload) -> Result:
+        await asyncio.sleep(.1)
+        return payload.upper()
+
+    msg = Message('upper', 'hi')
+    with duration_between(.2, .21):
+        async with jockey.Executor(registry, max_jobs=10).run() as executor:
+            with duration_between(.1, .15):
+                for _ in range(14):
+                    await executor.execute(msg, wait_for=jockey.WaitFor.NO_PRESSURE)
+    assert msg.calls == [('ok', 'HI')] * 14
+
+
+async def test_wait_for_start():
+    """Test how different wait_for settings are affected by max_jobs.
+    """
+    registry = Registry()
+
+    @registry.add('upper', max_jobs=5, priority=jockey.Priority.HIGH)
+    async def _upper(payload: Payload) -> Result:
+        await asyncio.sleep(.1)
+        return payload.upper()
+
+    msg = Message('upper', 'hi')
+    with duration_between(.3, .31):
+        async with jockey.Executor(registry, max_jobs=10).run() as executor:
+            with duration_between(.2, .25):
+                for _ in range(14):
+                    await executor.execute(msg, wait_for=jockey.WaitFor.START)
+    assert msg.calls == [('ok', 'HI')] * 14
+
+
+async def test_wait_for_finish():
+    """Test how different wait_for settings are affected by max_jobs.
+    """
+    registry = Registry()
+
+    @registry.add('upper', max_jobs=5, priority=jockey.Priority.HIGH)
+    async def _upper(payload: Payload) -> Result:
+        await asyncio.sleep(.1)
+        return payload.upper()
+
+    msg = Message('upper', 'hi')
+    with duration_between(.3, .31):
+        async with jockey.Executor(registry, max_jobs=10).run() as executor:
+            with duration_between(.3, .35):
+                for _ in range(3):
+                    await executor.execute(msg, wait_for=jockey.WaitFor.FINISH)
+    assert msg.calls == [('ok', 'HI')] * 3
