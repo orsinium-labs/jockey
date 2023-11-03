@@ -62,7 +62,7 @@ tasks:
     cmds:
       - which gh
       - test {{.CLI_ARGS}}
-      - cat walnats/__init__.py | grep {{.CLI_ARGS}}
+      - cat jockey/__init__.py | grep {{.CLI_ARGS}}
       - rm -rf dist/
       - flit build
       - flit publish
