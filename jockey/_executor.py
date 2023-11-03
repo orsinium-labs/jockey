@@ -16,6 +16,18 @@ from ._wait_for import WaitFor
 
 @dataclass(frozen=True)
 class Executor(Generic[Payload, Key, Result]):
+    """Executor takes care of running tasks and managing pools of tasks.
+
+    Args:
+        registry: the Registry to be used to get a handler for the given message.
+        max_jobs: how many jobs can be running at the same time across all handlers.
+        max_processes: the pool size for handlers executing in a process.
+            Defaults to the number of CPUs. The process pool will not be created
+            if no handlers need it.
+        max_threads: the pool size for handlers executing in a thread.
+            Defaults to the number of CPUs + 4. The thread pool will not be created
+            if no handlers need it.
+    """
     registry: Registry[Payload, Key, Result]
     max_jobs: int = 16
     max_processes: int | None = None
@@ -25,6 +37,12 @@ class Executor(Generic[Payload, Key, Result]):
     async def run(
         self: Executor[Payload, Key, Result],
     ) -> AsyncIterator[RunningExecutor[Payload, Key, Result]]:
+        """An async context manager that starts the executor.
+
+        On enter, it creates task pools and a lookup table for handlers.
+
+        On exit, it waits for all tasks to finish and destroys task pools.
+        """
         self.registry._sealed = True
         global_sem = asyncio.Semaphore(self.max_jobs)
         thread_pool: futures.ThreadPoolExecutor | None = None
@@ -76,6 +94,14 @@ class RunningExecutor(Generic[Payload, Key, Result]):
         *,
         wait_for: WaitFor = WaitFor.NO_PRESSURE,
     ) -> None:
+        """Process the given message using a registered handler.
+
+        It respect the maximum number of jobs specified in the Executor instance
+        and in the individual handlers. The wait_for argument allows you to
+        make execute block until the message processing reaches a certain stage.
+        It's useful for "back pressure" to not fetch from the message broker
+        more messages than you can process.
+        """
         if wait_for is WaitFor.NOTHING:
             coro = self._execute(msg)
             self._tasks.start(coro)
