@@ -17,26 +17,40 @@ classifiers = [
     "Typing :: Typed",
 ]
 keywords = [
-    "nats",
-    "dramatiq",
-    "celery",
     "microservices",
-    "rabbitmq",
-    "arq",
-    "rq",
-    "huey",
     "event-driven",
     "distributed",
     "web",
     "framewrok",
     "web framework",
     "asyncio",
+
+    # message brokers
+    "kafka",
+    "nats",
+    "rabbitmq",
+
+    # Python messaging libraries
+    "arq",
+    "celery",
+    "dramatiq",
+    "huey",
+    "rq",
+    "walnats",
 ]
 dependencies = []
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov", "pytest-asyncio"]
-lint = ["ruff", "mypy"]
+test = [
+    "hypothesis",     # property tests
+    "pytest",         # test framework
+    "pytest-cov",     # coverage report
+    "pytest-asyncio", # running async tests
+]
+lint = [
+    "ruff", # linter and formatter
+    "mypy", # type checker
+]
 
 [project.urls]
 Source = "https://github.com/orsinium-labs/jockey"
@@ -77,6 +91,7 @@ branch = true
 
 [tool.ruff]
 line-length = 90
+target-version = "py38"
 select = [
     "ASYNC", # flake8-async
     "B",     # flake8-bugbear
@@ -103,8 +118,8 @@ ignore = [
     "PLR2004", # allow hardcoded constants
     "PLW2901", # allow overriding loop variable
     "SIM117",  # allow nested with
+    "SIM105",  # allow try-except-pass, it's faster
 ]
-target-version = "py38"
 
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"

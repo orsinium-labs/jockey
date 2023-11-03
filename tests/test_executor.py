@@ -328,7 +328,7 @@ async def test_wait_for_nothing():
     """
     registry = Registry()
 
-    @registry.add('upper', max_jobs=5, priority=jockey.Priority.HIGH)
+    @registry.add('upper', max_jobs=5)
     async def _upper(payload: Payload) -> Result:
         await asyncio.sleep(.1)
         return payload.upper()
@@ -347,7 +347,7 @@ async def test_wait_for_no_pressure():
     """
     registry = Registry()
 
-    @registry.add('upper', max_jobs=20, priority=jockey.Priority.HIGH)
+    @registry.add('upper', max_jobs=20)
     async def _upper(payload: Payload) -> Result:
         await asyncio.sleep(.1)
         return payload.upper()
@@ -366,7 +366,7 @@ async def test_wait_for_start():
     """
     registry = Registry()
 
-    @registry.add('upper', max_jobs=5, priority=jockey.Priority.HIGH)
+    @registry.add('upper', max_jobs=5)
     async def _upper(payload: Payload) -> Result:
         await asyncio.sleep(.1)
         return payload.upper()
@@ -385,7 +385,7 @@ async def test_wait_for_finish():
     """
     registry = Registry()
 
-    @registry.add('upper', max_jobs=5, priority=jockey.Priority.HIGH)
+    @registry.add('upper', max_jobs=5)
     async def _upper(payload: Payload) -> Result:
         await asyncio.sleep(.1)
         return payload.upper()

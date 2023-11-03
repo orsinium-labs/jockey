@@ -5,3 +5,4 @@ __pycache__/
 /.venvs/
 /.coverage
 /htmlcov/
+/.hypothesis/
