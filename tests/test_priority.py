@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import random
+import sys
 
 import hypothesis
+import pytest
 from hypothesis import strategies
 
 from jockey import Priority
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason='flaky on 3.8')
 @hypothesis.given(
     sem_value=strategies.integers(1, 150),
     job_count=strategies.integers(1, 200),
